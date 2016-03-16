@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib as plt
 import csv
 import argparse
+import pickle
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.cross_validation import train_test_split, cross_val_score
 from sklearn.grid_search import GridSearchCV
@@ -39,6 +40,7 @@ def get_args():
     parser.add_argument("-x", "--features", help="indices of feature fields", nargs="+", type=int)
     parser.add_argument("-y", "--target", help="index of ground truth field", type=int)
     parser.add_argument("--benchmark", help="benchmark target field", type=int)
+    parser.add_argument("-o", "--output", help="output model file, pickled")
 
     return parser.parse_args()
 
@@ -62,9 +64,11 @@ if __name__ == "__main__":
         le = LabelEncoder()
         le.fit(["False", "True"])
         y_prime = le.transform(y_prime[:,0])
+    else:
+        y_prime = y_prime[:,0] # added by PS to make shapes match
 
     y = y[:,0]
-    y_prime = y_prime[:,0] # added by PS to make shapes match
+
     
     X = X[y>-1,:]
     y_prime = y_prime[y>-1]
@@ -90,7 +94,8 @@ if __name__ == "__main__":
             RandomForestClassifier(),
             GaussianNB()]
 
-    names = ["KNN", "GaussianSVM", "RandomForest", "Gaussian Naive Bayes"]
+    names = ["KNN", "GaussianSVM", "RandomForest", "Gaussian Naive Bayes",
+             "VotingClassifier of KNN, GaussianSVM, and RF"]
 
     params = [{"n_neighbors": 3. ** np.arange(5)},
               {"kernel": ["rbf"], "gamma": 3. ** np.arange(-5, 5), 
@@ -111,11 +116,34 @@ if __name__ == "__main__":
         best_scores.append(clf.best_score_)
         best_params.append(clf.best_params_)
 
-    print(best_scores)
-    print(best_params)
-
     #vote from the best
     voting_clf = VotingClassifier(list(zip(names, best_estimators))[:3], voting="hard")
     score = cross_val_score(voting_clf, X_train_norm, y_train, cv=3, scoring="f1")
-    print(score.mean())
-    print(f1_score(y_train, y_prime_train))
+
+    best_estimators.append(voting_clf)
+    best_scores.append(score.mean())
+    best_params.append({})
+    
+    best_model_idx = np.argmax(np.array(best_scores))
+
+    best_model = best_estimators[best_model_idx]
+
+    print("Best model is: {}, with parameters {}".format(\
+            names[best_model_idx], 
+            repr(best_params[best_model_idx])))
+    print("Validation F1 Score: {}".format(score[best_model_idx]))
+
+    #retrain with all of the training sample
+    best_model.fit(X_train_norm, y_train)
+    pred = best_model.predict(X_test_norm)
+    print("Testing F1 Score: {}".format(f1_score(y_test, pred)))
+
+    if args.benchmark:
+        print("Benchmark F1 Score: {}".format(\
+                f1_score(y_test, y_prime_test)))
+
+    if args.output:
+        with open(args.output, "wb") as fo:
+            pickle.dump(best_model, fo)
+        print("Pickled the best model in {}".format(args.output))
+
