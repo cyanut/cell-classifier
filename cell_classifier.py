@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import numpy as np
 import matplotlib as plt
 import csv
@@ -62,6 +64,7 @@ if __name__ == "__main__":
         y_prime = le.transform(y_prime[:,0])
 
     y = y[:,0]
+    y_prime = y_prime[:,0] # added by PS to make shapes match
     
     X = X[y>-1,:]
     y_prime = y_prime[y>-1]
