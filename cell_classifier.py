@@ -131,7 +131,7 @@ if __name__ == "__main__":
     print("Best model is: {}, with parameters {}".format(\
             names[best_model_idx], 
             repr(best_params[best_model_idx])))
-    print("Validation F1 Score: {}".format(score[best_model_idx]))
+    print("Validation F1 Score: {}".format(best_scores[best_model_idx]))
 
     #retrain with all of the training sample
     best_model.fit(X_train_norm, y_train)
