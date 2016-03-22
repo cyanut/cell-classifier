@@ -41,6 +41,7 @@ def get_args():
     parser.add_argument("-y", "--target", help="index of ground truth field", type=int)
     parser.add_argument("--benchmark", help="benchmark target field", type=int)
     parser.add_argument("-o", "--output", help="output model file, pickled")
+    parser.add_argument("-i","--image", help="apply model to classify an image")
 
     return parser.parse_args()
 
@@ -145,5 +146,7 @@ if __name__ == "__main__":
     if args.output:
         with open(args.output, "wb") as fo:
             pickle.dump(best_model, fo)
-        print("Pickled the best model in {}".format(args.output))
-
+            print("Pickled the best model in {}".format(args.output))
+    
+    print("target: {}").format(target_title)
+    print("features tried {}").format(feature_title)
