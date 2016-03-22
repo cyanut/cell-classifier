@@ -5,6 +5,7 @@ import matplotlib as plt
 import csv
 import argparse
 import pickle
+import os
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.cross_validation import train_test_split, cross_val_score
 from sklearn.grid_search import GridSearchCV
@@ -14,6 +15,10 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 from sklearn.naive_bayes import GaussianNB
+
+import skimage
+import scipy.misc, scipy.interpolate, scipy.ndimage
+from skimage import exposure, filters, morphology, feature, segmentation
 
 
 
@@ -152,4 +157,58 @@ if __name__ == "__main__":
     print("target: {}").format(target_title)
     print("features tried {}").format(feature_title)
 
-    
+    if args.image:
+        imgin = skimage.img_as_uint(scipy.misc.imread(args.image))
+        minp = np.percentile(imgin, 50)
+        img_iadjust = args.image*(imgin >= minp)  
+        tmplt = morphology.disk(5)
+        tmplt_matched = skimage.feature.match_template(img_iadjust, tmplt, pad_input=True)
+        tmplt_thresholdbinary = tmplt_matched >= np.percentile(tmplt_matched, 98)
+        img_lbl, ncell = scipy.ndimage.measurements.label(tmplt_thresholdbinary,np.ones((3,3), bool))
+        print "Detected {} objects".format(ncell)
+        columns = ['imgname','imgnumber','roi','id','label',
+                'coords','bbox_rmin', 'bbox_rmax','bbox_cmin', 'bbox_cmax','centroidr','centroidc',
+                'meani','equivdiameter','circularity','eccentricity','area','minor_axis_length',
+                'major_axis_length','min_intensity','max_intensity']
+        lbldetails = pd.DataFrame(columns=columns)
+        lblprops = skimage.measure.regionprops(img_lbl,img_iadjust)
+        z=0
+        for ilbl in lblprops:
+            circularity = (ilbl.perimeter*ilbl.perimeter) / (np.pi*4.0*ilbl.area)
+            lbldetails.loc[z] = ["NA",
+                                "NA", "NA", z, 
+                                ilbl.label, 
+                                ilbl.coords,
+                                ilbl.bbox[0], ilbl.bbox[2], ilbl.bbox[1], ilbl.bbox[3],
+                                ilbl.centroid[0], ilbl.centroid[1], 
+                                ilbl.mean_intensity, 
+                                ilbl.equivalent_diameter,
+                                circularity, 
+                                ilbl.eccentricity,
+                                ilbl.area, 
+                                ilbl.minor_axis_length, ilbl.major_axis_length,
+                                ilbl.min_intensity, ilbl.max_intensity]
+            z += 1
+        
+        raw_titles = lbldetails.columns.tolist()
+        raw_data = lbldetails.values.tolist()
+        feature_title, X = get_fields(raw_titles, raw_data, args.features)
+        X = X.astype(float)
+
+        normalizer = sklearn.preprocessing.StandardScaler()
+        normalizer.fit(X)
+        X_norm = normalizer.transform(X)
+
+        lbldetails['classified'] = classifier.predict(X_norm)
+        # add an object to the front (represents label number 0)
+        lbl_classified = pd.Series([0])
+        lbl_classified = lbl_classified.append(lbldetails['classified'])
+        # we want objects removed to be labeled 1 (aka True). They are 0 right now
+        lbl_classified = 1 - lbl_classified
+        lbl_classified = np.abs(lbl_classified)
+        lbl_classified = np.array(lbl_classified.astype(bool))
+        print pd.Series(lbl_classified).value_counts()
+        remove_pixel = lbl_classified[img_lbl]
+        img_lbl[remove_pixel] = 0
+        filename, = os.path.splitext(os.path.basename(image))
+        scipy.misc.imsave(filename+"_cells.tif", img_lbl > 0.5)
