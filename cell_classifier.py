@@ -40,6 +40,7 @@ def get_args():
     parser.add_argument("-x", "--features", help="indices of feature fields", nargs="+", type=int)
     parser.add_argument("-y", "--target", help="index of ground truth field", type=int)
     parser.add_argument("--benchmark", help="benchmark target field", type=int)
+    parser.add_argument("--score",help="scoring metric for determining best model. ", default="f1")
     parser.add_argument("-o", "--output", help="output model file, pickled")
     parser.add_argument("-i","--image", help="apply model to classify an image")
 
@@ -111,7 +112,7 @@ if __name__ == "__main__":
     best_params = []
     
     for name, param, classifier in zip(names, params, classifiers):
-        clf = GridSearchCV(classifier, param, cv=3, scoring="f1", verbose=3, n_jobs=8)
+        clf = GridSearchCV(classifier, param, cv=3, scoring=args.score, verbose=3, n_jobs=8)
         clf.fit(X_train_norm, y_train)
         best_estimators.append(clf.best_estimator_)
         best_scores.append(clf.best_score_)
@@ -119,7 +120,7 @@ if __name__ == "__main__":
 
     #vote from the best
     voting_clf = VotingClassifier(list(zip(names, best_estimators))[:3], voting="hard")
-    score = cross_val_score(voting_clf, X_train_norm, y_train, cv=3, scoring="f1")
+    score = cross_val_score(voting_clf, X_train_norm, y_train, cv=3, scoring=args.score)
 
     best_estimators.append(voting_clf)
     best_scores.append(score.mean())
@@ -150,3 +151,5 @@ if __name__ == "__main__":
     
     print("target: {}").format(target_title)
     print("features tried {}").format(feature_title)
+
+    
