@@ -160,7 +160,7 @@ if __name__ == "__main__":
     if args.image:
         imgin = skimage.img_as_uint(scipy.misc.imread(args.image))
         minp = np.percentile(imgin, 50)
-        img_iadjust = args.image*(imgin >= minp)  
+        img_iadjust = imgin*(imgin >= minp)  
         tmplt = morphology.disk(5)
         tmplt_matched = skimage.feature.match_template(img_iadjust, tmplt, pad_input=True)
         tmplt_thresholdbinary = tmplt_matched >= np.percentile(tmplt_matched, 98)
