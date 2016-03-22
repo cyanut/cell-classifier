@@ -167,7 +167,7 @@ if __name__ == "__main__":
         tmplt_thresholdbinary = tmplt_matched >= np.percentile(tmplt_matched, 98)
         img_lbl, ncell = scipy.ndimage.measurements.label(tmplt_thresholdbinary,np.ones((3,3), bool))
         print "Detected {} objects".format(ncell)
-        columns = ['imgname','imgnumber','roi','id','label',
+        columns = ['indexcolumnidislike','imgname','imgnumber','roi','id','label',
                 'coords','bbox_rmin', 'bbox_rmax','bbox_cmin', 'bbox_cmax','centroidr','centroidc',
                 'meani','equivdiameter','circularity','eccentricity','area','minor_axis_length',
                 'major_axis_length','min_intensity','max_intensity']
@@ -176,7 +176,7 @@ if __name__ == "__main__":
         z=0
         for ilbl in lblprops:
             circularity = (ilbl.perimeter*ilbl.perimeter) / (np.pi*4.0*ilbl.area)
-            lbldetails.loc[z] = ["NA",
+            lbldetails.loc[z] = ["NA","NA",
                                 "NA", "NA", z, 
                                 ilbl.label, 
                                 ilbl.coords,
@@ -193,7 +193,7 @@ if __name__ == "__main__":
         
         raw_titles = lbldetails.columns.tolist()
         raw_data = lbldetails.values.tolist()
-        feature_title, X = get_fields(raw_titles, raw_data, args.features)
+        feature_title, X = get_fields(raw_titles, raw_data, args.features )
         X = X.astype(float)
 
         normalizer = sklearn.preprocessing.StandardScaler()
