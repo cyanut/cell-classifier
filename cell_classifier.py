@@ -16,6 +16,7 @@ from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 from sklearn.naive_bayes import GaussianNB
 
+import pandas as pd
 import skimage
 import scipy.misc, scipy.interpolate, scipy.ndimage
 from skimage import exposure, filters, morphology, feature, segmentation
