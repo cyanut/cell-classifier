@@ -167,7 +167,7 @@ if __name__ == "__main__":
         tmplt_thresholdbinary = tmplt_matched >= np.percentile(tmplt_matched, 98)
         img_lbl, ncell = scipy.ndimage.measurements.label(tmplt_thresholdbinary,np.ones((3,3), bool))
         print "Detected {} objects".format(ncell)
-        columns = ['indexcolumnidislike','imgname','imgnumber','roi','id','label',
+        columns = ['otherindex','indexcolumnidislike','imgname','imgnumber','roi','id','label',
                 'coords','bbox_rmin', 'bbox_rmax','bbox_cmin', 'bbox_cmax','centroidr','centroidc',
                 'meani','equivdiameter','circularity','eccentricity','area','minor_axis_length',
                 'major_axis_length','min_intensity','max_intensity']
@@ -176,7 +176,7 @@ if __name__ == "__main__":
         z=0
         for ilbl in lblprops:
             circularity = (ilbl.perimeter*ilbl.perimeter) / (np.pi*4.0*ilbl.area)
-            lbldetails.loc[z] = ["NA","NA",
+            lbldetails.loc[z] = ["NA","NA","NA",
                                 "NA", "NA", z, 
                                 ilbl.label, 
                                 ilbl.coords,
@@ -193,14 +193,16 @@ if __name__ == "__main__":
         
         raw_titles = lbldetails.columns.tolist()
         raw_data = lbldetails.values.tolist()
+        print raw_titles
+        print args.features
         feature_title, X = get_fields(raw_titles, raw_data, args.features )
         X = X.astype(float)
 
-        normalizer = sklearn.preprocessing.StandardScaler()
+        normalizer = StandardScaler()
         normalizer.fit(X)
         X_norm = normalizer.transform(X)
 
-        lbldetails['classified'] = classifier.predict(X_norm)
+        lbldetails['classified'] = best_model.predict(X_norm)
         # add an object to the front (represents label number 0)
         lbl_classified = pd.Series([0])
         lbl_classified = lbl_classified.append(lbldetails['classified'])
@@ -211,5 +213,5 @@ if __name__ == "__main__":
         print pd.Series(lbl_classified).value_counts()
         remove_pixel = lbl_classified[img_lbl]
         img_lbl[remove_pixel] = 0
-        filename, = os.path.splitext(os.path.basename(image))
+        filename, = os.path.splitext(os.path.basename(args.image))
         scipy.misc.imsave(filename+"_cells.tif", img_lbl > 0.5)
