@@ -8,6 +8,7 @@ import pickle
 import os
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.cross_validation import train_test_split, cross_val_score
+from sklearn.pipeline import Pipeline
 from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import f1_score
 
@@ -134,7 +135,7 @@ if __name__ == "__main__":
     
     best_model_idx = np.argmax(np.array(best_scores))
 
-    best_model = best_estimators[best_model_idx]
+    best_model = Pipeline([("normalize", normalizer), ("estimator", best_estimators[best_model_idx])])
 
     print("Best model is: {}, with parameters {}".format(\
             names[best_model_idx], 
@@ -198,11 +199,8 @@ if __name__ == "__main__":
         feature_title, X = get_fields(raw_titles, raw_data, args.features )
         X = X.astype(float)
 
-        normalizer = StandardScaler()
-        normalizer.fit(X)
-        X_norm = normalizer.transform(X)
 
-        lbldetails['classified'] = best_model.predict(X_norm)
+        lbldetails['classified'] = best_model.predict(X)
         # add an object to the front (represents label number 0)
         lbl_classified = pd.Series([0])
         lbl_classified = lbl_classified.append(lbldetails['classified'])
