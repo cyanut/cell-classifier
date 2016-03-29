@@ -213,5 +213,5 @@ if __name__ == "__main__":
         print pd.Series(lbl_classified).value_counts()
         remove_pixel = lbl_classified[img_lbl]
         img_lbl[remove_pixel] = 0
-        filename, = os.path.splitext(os.path.basename(args.image))
+        filename = os.path.splitext(os.path.basename(args.image))[0]
         scipy.misc.imsave(filename+"_cells.tif", img_lbl > 0.5)
