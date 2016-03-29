@@ -1,5 +1,17 @@
 Notes on models
 
+`./cell_classifier.py -x 14 15 16 17 18 19 20 21 22 -y 23 -o model_20160329_gt8_bbox_lesszero_20160329.pkl ../ccell/brain-map/algorithmdev/cropsections_joineddetails_20160329_gt8_bboxcriteria_lesszero.csv`
+Best model is: RandomForest, with parameters {'max_features': 1, 'n_estimators': 243}
+Validation F1 Score: 0.972681564303
+Testing F1 Score: 0.975501113586
+Pickled the best model in model_20160329_gt8_bbox_lesszero_20160329.pkl
+
+`./cell_classifier.py -x 14 15 16 17 18 19 20 21 22 -y 23 -o model_gt10_f1_bbox_morezero.pkl ../ccell/brain-map/algorithmdev/cropsections_joineddetails_20160322_gt10_bboxcriteria_morezero.csv`
+Best model is: GaussianSVM, with parameters {'kernel': 'rbf', 'C': 81.0, 'gamma': 0.00411522633744856}
+Validation F1 Score: 0.736872661669
+Testing F1 Score: 0.742482652274
+Pickled the best model in model_gt10_f1_bbox_morezero.pkl
+
 `./cell_classifier.py -x 14 15 16 17 18 19 20 21 22 -y 23 -o model_gt4_f1_bbox_morezero.pkl ../ccell/brain-map/algorithmdev/cropsections_joineddetails_20160321_gt4_bboxcriteria_morezero.csv`
 Best model is: GaussianSVM, with parameters {'kernel': 'rbf', 'C': 9.0, 'gamma': 0.037037037037037035}
 Validation F1 Score: 0.724603978948
