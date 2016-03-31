@@ -47,7 +47,7 @@ def get_args():
     parser.add_argument("-x", "--features", help="indices of feature fields", nargs="+", type=int)
     parser.add_argument("-y", "--target", help="index of ground truth field", type=int)
     parser.add_argument("--benchmark", help="benchmark target field", type=int)
-    parser.add_argument("--score",help="scoring metric for determining best model. ", default="f1")
+    parser.add_argument("--score",help="scoring metric for determining best model", default="f1")
     parser.add_argument("-o", "--output", help="output model file, pickled")
     parser.add_argument("-i","--image", help="apply model to classify an image")
 
@@ -208,8 +208,8 @@ if __name__ == "__main__":
         lbl_classified = 1 - lbl_classified
         lbl_classified = np.abs(lbl_classified)
         lbl_classified = np.array(lbl_classified.astype(bool))
-        print pd.Series(lbl_classified).value_counts()
         remove_pixel = lbl_classified[img_lbl]
         img_lbl[remove_pixel] = 0
         filename = os.path.splitext(os.path.basename(args.image))[0]
+        print filename+"_cells.tif"
         scipy.misc.imsave(filename+"_cells.tif", img_lbl > 0.5)
