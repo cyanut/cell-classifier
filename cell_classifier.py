@@ -160,12 +160,15 @@ if __name__ == "__main__":
     print("features tried {}").format(feature_title)
 
     if args.image:
+        disksize = 5; corrthres = 98;
+        print "using settings which may no longer be used. "
+        print "e.g. disk size {}, correlation threshold {} percentile".format(disksize, corrthres)
         imgin = skimage.img_as_uint(scipy.misc.imread(args.image))
         minp = np.percentile(imgin, 50)
         img_iadjust = imgin*(imgin >= minp)  
-        tmplt = morphology.disk(5)
+        tmplt = morphology.disk(disksize)
         tmplt_matched = skimage.feature.match_template(img_iadjust, tmplt, pad_input=True)
-        tmplt_thresholdbinary = tmplt_matched >= np.percentile(tmplt_matched, 98)
+        tmplt_thresholdbinary = tmplt_matched >= np.percentile(tmplt_matched, corrthres)
         img_lbl, ncell = scipy.ndimage.measurements.label(tmplt_thresholdbinary,np.ones((3,3), bool))
         print "Detected {} objects".format(ncell)
         columns = ['otherindex','indexcolumnidislike','imgname','imgnumber','roi','id','label',
