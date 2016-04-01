@@ -10,12 +10,13 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.cross_validation import train_test_split, cross_val_score
 from sklearn.pipeline import Pipeline
 from sklearn.grid_search import GridSearchCV
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, precision_recall_fscore_support
 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 from sklearn.naive_bayes import GaussianNB
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 
 import pandas as pd
 import skimage
@@ -23,6 +24,7 @@ import scipy.misc, scipy.interpolate, scipy.ndimage
 from skimage import exposure, filters, morphology, feature, segmentation
 
 
+model_names = ["knn", "gsvm", "rf", "gnb", "lda", "voting"]
 
 def get_raw_data(fname):
     titles = None
@@ -50,6 +52,8 @@ def get_args():
     parser.add_argument("--score",help="scoring metric for determining best model. ", default="f1")
     parser.add_argument("-o", "--output", help="output model file, pickled")
     parser.add_argument("-i","--image", help="apply model to classify an image")
+    parser.add_argument("--select-model", help="The model classes to train, defaults to all.", nargs="*", choices=model_names)
+    parser.add_argument("--unknown-as", help="Treat unknown label as", choices=["0","1","-1","remove"], default="remove")
 
     return parser.parse_args()
 
@@ -78,10 +82,13 @@ if __name__ == "__main__":
 
     y = y[:,0]
 
-    
-    X = X[y>-1,:]
-    y_prime = y_prime[y>-1]
-    y = y[y>-1]
+    if args.unknown_as == "remove":
+        X = X[y>-1,:]
+        y_prime = y_prime[y>-1]
+        y = y[y>-1]
+    elif args.unknown_as in ["0", "1", "-1"]:
+        y[y==-1] = int(args.unknown_as)
+
 
     #test split both target and benchmark
     y_tmp = np.vstack([y, y_prime]).T
@@ -101,55 +108,67 @@ if __name__ == "__main__":
             KNeighborsClassifier(),
             SVC(),
             RandomForestClassifier(),
-            GaussianNB()]
+            GaussianNB(),
+            LDA(),
+            ]
 
-    names = ["KNN", "GaussianSVM", "RandomForest", "Gaussian Naive Bayes",
-             "VotingClassifier of KNN, GaussianSVM, and RF"]
+    names = model_names 
+           
 
     params = [{"n_neighbors": 3. ** np.arange(5)},
               {"kernel": ["rbf"], "gamma": 3. ** np.arange(-5, 5), 
                "C": 3. ** np.arange(-5,5)},
-              {"n_estimators": 3 ** np.arange(7), 
+              {"n_estimators": 3 ** np.arange(6), 
                "max_features": np.arange(1, X.shape[1])},
+              {},
               {},
               ]
 
     best_estimators = []
     best_scores = []
     best_params = []
+    selected_names = []
     
     for name, param, classifier in zip(names, params, classifiers):
-        clf = GridSearchCV(classifier, param, cv=3, scoring=args.score, verbose=3, n_jobs=8)
-        clf.fit(X_train_norm, y_train)
-        best_estimators.append(clf.best_estimator_)
-        best_scores.append(clf.best_score_)
-        best_params.append(clf.best_params_)
+        if args.select_model and name in args.select_model and name != "voting":
+            selected_names.append(name)
+            #lda tend to hang if run parallel
+            clf = GridSearchCV(classifier, param, cv=3, scoring=args.score, verbose=3, n_jobs=1)
+            clf.fit(X_train_norm, y_train)
+            best_estimators.append(clf.best_estimator_)
+            best_scores.append(clf.best_score_)
+            best_params.append(clf.best_params_)
+            
 
-    #vote from the best
-    voting_clf = VotingClassifier(list(zip(names, best_estimators))[:3], voting="hard")
-    score = cross_val_score(voting_clf, X_train_norm, y_train, cv=3, scoring=args.score)
+    if "voting" in args.select_model:
+        selected_names.append("voting")
+        #vote from the best
+        voting_clf = VotingClassifier(list(zip(names, best_estimators)), voting="hard")
+        score = cross_val_score(voting_clf, X_train_norm, y_train, cv=3, scoring=args.score)
 
-    best_estimators.append(voting_clf)
-    best_scores.append(score.mean())
-    best_params.append({})
+        best_estimators.append(voting_clf)
+        best_scores.append(score.mean())
+        best_params.append({})
+
+    print(zip(selected_names,best_scores))
+    print("LDA coef:", zip(feature_title, LDA().fit(X_train_norm, y_train).coef_[0]))
     
     best_model_idx = np.argmax(np.array(best_scores))
 
     best_model = Pipeline([("normalize", normalizer), ("estimator", best_estimators[best_model_idx])])
 
     print("Best model is: {}, with parameters {}".format(\
-            names[best_model_idx], 
+            selected_names[best_model_idx], 
             repr(best_params[best_model_idx])))
     print("Validation F1 Score: {}".format(best_scores[best_model_idx]))
 
     #retrain with all of the training sample
-    best_model.fit(X_train_norm, y_train)
-    pred = best_model.predict(X_test_norm)
-    print("Testing F1 Score: {}".format(f1_score(y_test, pred)))
+    best_model.fit(X_train, y_train)
+    pred = best_model.predict(X_test)
+    print("Testing precision: {}, recall: {}, F1 Score: {}, support: {}".format(*precision_recall_fscore_support(y_test, pred, average="binary")))
 
     if args.benchmark:
-        print("Benchmark F1 Score: {}".format(\
-                f1_score(y_test, y_prime_test)))
+        print("Benchmark precision: {}, recall: {}, F1 score: {}, support: {}".format(*precision_recall_fscore_support(y_test, y_prime_test, average="binary")))
 
     if args.output:
         with open(args.output, "wb") as fo:
