@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import numpy as np
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import csv
 import argparse
 import pickle
@@ -10,7 +10,7 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.cross_validation import train_test_split, cross_val_score
 from sklearn.pipeline import Pipeline
 from sklearn.grid_search import GridSearchCV
-from sklearn.metrics import f1_score, precision_recall_fscore_support
+from sklearn.metrics import f1_score, precision_recall_fscore_support, roc_curve
 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
@@ -54,6 +54,7 @@ def get_args():
     parser.add_argument("-i","--image", help="apply model to classify an image")
     parser.add_argument("--select-model", help="The model classes to train, defaults to all.", nargs="*", choices=model_names)
     parser.add_argument("--unknown-as", help="Treat unknown label as", choices=["0","1","-1","remove"], default="remove")
+    parser.add_argument("--roc", help="show roc curve", action="store_true")
 
     return parser.parse_args()
 
@@ -177,6 +178,15 @@ if __name__ == "__main__":
     
     print("target: {}").format(target_title)
     print("features tried {}").format(feature_title)
+
+    if args.roc:
+        pred_test = best_model.transform(X_test)
+        fpr,tpr,_ = roc_curve(y_test, pred_test)
+        plt.plot(fpr, tpr)
+        plt.xlabel("False positive rate")
+        plt.ylabel("True positive rate")
+        plt.show()
+
 
     if args.image:
         disksize = 5; corrthres = 98;
