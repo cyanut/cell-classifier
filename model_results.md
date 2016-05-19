@@ -1,5 +1,23 @@
 Notes on models
 
+`./cell_classifier.py -o model_20160519_gt8_f1score.pkl -x 14 15 16 17 18 19 20 21 22 -y 23 --benchmark 13 ../ccell-data/brain-map/algorithmdev/cropsections_joineddetails_20160518_gt8.csv`
+Best model is: gsvm, with parameters {'kernel': 'rbf', 'C': 0.33333333333333331, 'gamma': 1.0}
+Validation F1 Score: 0.81977625301
+Testing precision: 0.727702303603, recall: 0.935459377373, F1 Score: 0.818604651163, support: None
+Benchmark precision: 0.717557251908, recall: 0.285497342445, F1 score: 0.408473655622, support: None
+Pickled the best model in model_20160519_gt8_f1score.pkl
+target: ['ground_truth']
+features tried ['meani', 'equivdiameter', 'circularity', 'eccentricity', 'area', 'minor_axis_length', 'major_axis_length', 'min_intensity', 'max_intensity']
+
+
+`./cell_classifier.py -x 14 15 16 17 18 19 20 21 22 -y 23 --benchmark 13 ../ccell/brain-map/algorithmdev/cropsections_joineddetails_20160329_gt8_bboxcriteria_lesszero.csv`
+Best model is: RandomForest, with parameters {'max_features': 1, 'n_estimators': 27}
+Validation F1 Score: 0.972797103886
+Testing F1 Score: 0.975899147201
+Benchmark F1 Score: 0.503340757238
+target: ['ground_truth']
+features tried ['meani', 'equivdiameter', 'circularity', 'eccentricity', 'area', 'minor_axis_length', 'major_axis_length', 'min_intensity', 'max_intensity']
+
 `./cell_classifier.py -x 14 15 16 17 18 19 20 21 22 -y 23 -o model_20160331_gt20_bbox_lesszero_20160331_precision.pkl --score precision ../ccell/brain-map/algorithmdev/cropsections_joineddetails_20160331_gt20_bboxcriteria_lesszero.csv`
 Best model is: RandomForest, with parameters {'max_features': 8, 'n_estimators': 3}
 Validation F1 Score: 0.96397316

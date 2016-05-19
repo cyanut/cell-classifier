@@ -52,7 +52,7 @@ def get_args():
     parser.add_argument("--score",help="scoring metric for determining best model", default="f1")
     parser.add_argument("-o", "--output", help="output model file, pickled")
     parser.add_argument("-i","--image", help="apply model to classify an image")
-    parser.add_argument("--select-model", help="The model classes to train, defaults to all.", nargs="*", choices=model_names)
+    parser.add_argument("--select-model", help="The model classes to train, defaults to all.", nargs="*", choices=model_names, default=model_names)
     parser.add_argument("--unknown-as", help="Treat unknown label as", choices=["0","1","-1","remove"], default="remove")
     parser.add_argument("--roc", help="show roc curve", action="store_true")
 
