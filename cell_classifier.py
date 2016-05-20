@@ -55,6 +55,7 @@ def get_args():
     parser.add_argument("--select-model", help="The model classes to train, defaults to all.", nargs="*", choices=model_names, default=model_names)
     parser.add_argument("--unknown-as", help="Treat unknown label as", choices=["0","1","-1","remove"], default="remove")
     parser.add_argument("--roc", help="show roc curve", action="store_true")
+    parser.add_argument("--njobs",help="number of processors to parallelize",default=1,type=int)
 
     return parser.parse_args()
 
@@ -134,7 +135,7 @@ if __name__ == "__main__":
         if args.select_model and name in args.select_model and name != "voting":
             selected_names.append(name)
             #lda tend to hang if run parallel
-            clf = GridSearchCV(classifier, param, cv=3, scoring=args.score, verbose=3, n_jobs=1)
+            clf = GridSearchCV(classifier, param, cv=3, scoring=args.score, verbose=3, n_jobs=args.njobs)
             clf.fit(X_train_norm, y_train)
             best_estimators.append(clf.best_estimator_)
             best_scores.append(clf.best_score_)
