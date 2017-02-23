@@ -1,5 +1,27 @@
 Notes on models
 
+`./cell_classifier.py --njobs 4 -o model_20160520_gt8_rmexcluded_gauss_f1score.pkl -x 14 15 16 17 18 19 20 21 22 -y 23 --benchmark 13 ../ccell-data/brain-map/algorithmdev/cropsections_joineddetails_20160520_gt8_rmexcluded_gauss.csv`
+[('knn', 0.80028668384209678), ('gsvm', 0.80667518729722321), ('rf', 0.78498380620119923), ('gnb', 0.77152816124512835), ('lda', 0.79653964178078129), ('voting', 0.80466154756517572)]
+('LDA coef:', [('meani', 0.21617623891435017), ('equivdiameter', 2.8937220222490243), ('circularity', -0.08681813478225732), ('eccentricity', -0.19410876132473107), ('area', -2.0570416275254964), ('minor_axis_length', -0.20137845778309882), ('major_axis_length', 0.25765311007233194), ('min_intensity', -0.36483983599353464), ('max_intensity', 0.28480908171778063)])
+Best model is: gsvm, with parameters {'kernel': 'rbf', 'C': 1.0, 'gamma': 0.1111111111111111}
+Validation F1 Score: 0.806675187297
+Testing precision: 0.733417561592, recall: 0.946210268949, F1 Score: 0.826334519573, support: None
+Benchmark precision: 0.60736196319, recall: 0.080684596577, F1 score: 0.142446043165, support: None
+Pickled the best model in model_20160520_gt8_rmexcluded_gauss_f1score.pkl
+target: ['ground_truth']
+features tried ['meani', 'equivdiameter', 'circularity', 'eccentricity', 'area', 'minor_axis_length', 'major_axis_length', 'min_intensity', 'max_intensity']
+
+`./cell_classifier.py -o model_20160519_gt8_rmexcluded_f1score.pkl -x 14 15 16 17 18 19 20 21 22 -y 23 --benchmark 13 ../ccell-data/brain-map/algorithmdev/cropsections_joineddetails_20160519_gt8_rmexcluded.csv`
+[('knn', 0.79848887187092588), ('gsvm', 0.80541524092321271), ('rf', 0.78711567323117615), ('gnb', 0.79767486646639341), ('lda', 0.79885051256243733), ('voting', 0.80325688188278088)]
+('LDA coef:', [('meani', 0.68193218885288232), ('equivdiameter', 14.600604215736112), ('circularity', 0.17165900594298547), ('eccentricity', -0.88299242099644859), ('area', -5.0562179198635242), ('minor_axis_length', -3.7081823921458383), ('major_axis_length', -1.8884962966714163), ('min_intensity', -0.87427120345366127), ('max_intensity', 0.29504017196907162)])
+Best model is: gsvm, with parameters {'kernel': 'rbf', 'C': 27.0, 'gamma': 0.1111111111111111}
+Validation F1 Score: 0.805415240923
+Testing precision: 0.706470588235, recall: 0.940485512921, F1 Score: 0.80685253611, support: None
+Benchmark precision: 0.693577981651, recall: 0.296006264683, F1 score: 0.414928649835, support: None
+Pickled the best model in model_20160519_gt8_rmexcluded_f1score.pkl
+target: ['ground_truth']
+features tried ['meani', 'equivdiameter', 'circularity', 'eccentricity', 'area', 'minor_axis_length', 'major_axis_length', 'min_intensity', 'max_intensity']
+
 `./cell_classifier.py -o model_20160519_gt8_f1score.pkl -x 14 15 16 17 18 19 20 21 22 -y 23 --benchmark 13 ../ccell-data/brain-map/algorithmdev/cropsections_joineddetails_20160518_gt8.csv`
 Best model is: gsvm, with parameters {'kernel': 'rbf', 'C': 0.33333333333333331, 'gamma': 1.0}
 Validation F1 Score: 0.81977625301
