@@ -191,8 +191,8 @@ if __name__ == "__main__":
 
     if args.image:
         disksize = 5; corrthres = 98;
-        print "using settings which may no longer be used. "
-        print "e.g. disk size {}, correlation threshold {} percentile".format(disksize, corrthres)
+        print("Using settings which may no longer be used. ")
+        print("e.g. disk size {}, correlation threshold {} percentile".format(disksize, corrthres))
         imgin = skimage.img_as_uint(scipy.misc.imread(args.image))
         minp = np.percentile(imgin, 50)
         img_iadjust = imgin*(imgin >= minp)  
@@ -200,7 +200,7 @@ if __name__ == "__main__":
         tmplt_matched = skimage.feature.match_template(img_iadjust, tmplt, pad_input=True)
         tmplt_thresholdbinary = tmplt_matched >= np.percentile(tmplt_matched, corrthres)
         img_lbl, ncell = scipy.ndimage.measurements.label(tmplt_thresholdbinary,np.ones((3,3), bool))
-        print "Detected {} objects".format(ncell)
+        print("Detected {} objects".format(ncell))
         columns = ['otherindex','indexcolumnidislike','imgname','imgnumber','roi','id','label',
                 'coords','bbox_rmin', 'bbox_rmax','bbox_cmin', 'bbox_cmax','centroidr','centroidc',
                 'meani','equivdiameter','circularity','eccentricity','area','minor_axis_length',
@@ -227,8 +227,8 @@ if __name__ == "__main__":
         
         raw_titles = lbldetails.columns.tolist()
         raw_data = lbldetails.values.tolist()
-        print raw_titles
-        print args.features
+        print(raw_titles)
+        print(args.features)
         feature_title, X = get_fields(raw_titles, raw_data, args.features )
         X = X.astype(float)
 
@@ -244,5 +244,5 @@ if __name__ == "__main__":
         remove_pixel = lbl_classified[img_lbl]
         img_lbl[remove_pixel] = 0
         filename = os.path.splitext(os.path.basename(args.image))[0]
-        print filename+"_cells.tif"
+        print(filename+"_cells.tif")
         scipy.misc.imsave(filename+"_cells.tif", img_lbl > 0.5)
